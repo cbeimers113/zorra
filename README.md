@@ -1,6 +1,6 @@
 # Zorra
 
-A peer-to-peer encrypted data transfer tool built on a direct IPv6 tunnel primitive.
+A fully decentralized peer-to-peer encrypted data transfer tool built on a direct IPv6 tunnel primitive.
 
 Zorra lets you send messages and files directly to a friend; no cloud, no relay, and no accounts are required.
 
@@ -13,7 +13,7 @@ Zorra lets you send messages and files directly to a friend; no cloud, no relay,
 - **Emergent mesh**: no formal mesh topology, meshes arise as a consequence of multilateral connections
 - **Encrypted**: all data is encrypted end-to-end with a custom key exchange layer
 - **Simple CLI**: the interface is minimal and obvious
-- **Portable**: a single Go binary, no kernel modules, no root required
+- **Portable**: a single Go binary, no kernel modules, no third party dependencies
 
 ## Non-Goals
 
@@ -28,6 +28,8 @@ Zorra lets you send messages and files directly to a friend; no cloud, no relay,
 ## Design
 
 ### Philosophy
+
+**Decentralization + Simplicity = Elegance**
 
 Zorra is built around a single primitive: a secure encrypted tunnel between exactly two peers. There is no session to join, no network to configure, and no server to register with. Two peers exchange addresses out of band, establish a direct connection, and communicate.
 
@@ -73,7 +75,7 @@ On top of the encrypted tunnel, Zorra implements a simple file transfer protocol
 
 ### Address Stability
 
-IPv6 addresses on home networks are subject to change due to ISP prefix rotation and OS privacy extensions (RFC 4941). Zorra does not solve this automatically. Peers are expected to exchange current addresses before connecting. This is an explicit out-of-scope decision for v1.
+IPv6 addresses on home networks are subject to change due to ISP prefix rotation and OS privacy extensions (RFC 4941). Zorra solves this automatically by registering a custom, deterministic IPv6 address for the duration of a session. Peers are expected to exchange connection details out of band, with a tentative solution for peer discovery in v2.
 
 ---
 
@@ -113,20 +115,6 @@ zorra
 | Resumable transfers | ✅ | ❌ | ✅ | ✅ |
 | One-shot transfer | ✅ | ✅ | ✅ | ❌ |
 | No account required | ✅ | ✅ | ✅ | ✅ |
-
----
-
-## Implementation
-
-- **Language**: Go
-- **Target platforms**: Linux, macOS, Windows
-- **Dependencies**: TBD, aiming to minimize external dependencies for the core tunnel
-
----
-
-## Status
-
-Early design phase. Named after Zorra Township, Oxford County, Ontario.
 
 ---
 
