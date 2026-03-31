@@ -1,7 +1,7 @@
-package addressing 
+package addressing
 
 import (
-  "encoding/ascii85"
+	"encoding/ascii85"
 	"net"
 )
 
@@ -11,6 +11,9 @@ func CreateShareCode() (string, error) {
 	if err != nil {
 		return "", err
 	}
+
+	// Find the longest IPv6 prefix of this address that's in the channel map
+	// TODO: pickup here
 
 	// Encode the address as ASCII85
 	dst := make([]byte, ascii85.MaxEncodedLen(len(src)))
@@ -24,8 +27,8 @@ func ReadShareCode(shareCode string) (net.IP, error) {
 	src := []byte(shareCode)
 	dst := make([]byte, 39)
 	n, _, err := ascii85.Decode(dst, src, true)
-  if err != nil {
-		return nil, err 
+	if err != nil {
+		return nil, err
 	}
 
 	return net.IP(dst[:n]), nil

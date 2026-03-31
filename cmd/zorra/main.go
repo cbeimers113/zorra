@@ -6,6 +6,8 @@ import (
 	"syscall"
 
 	"github.com/cbeimers113/zorra/internal/cli"
+	"github.com/cbeimers113/zorra/internal/core/addressing"
+	"github.com/cbeimers113/zorra/internal/log"
 )
 
 func main() {
@@ -15,6 +17,10 @@ func main() {
 		syscall.SIGTERM,
 	)
 	defer stop()
+
+	if err := addressing.LoadChannelMap(); err != nil {
+		log.Warnf("Unable to load channel map: %s", err.Error())
+	}
 
 	cli.Execute(ctx)
 }

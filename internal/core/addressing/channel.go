@@ -14,24 +14,12 @@ var (
 	channelMapRaw []byte
 
 	// The in-memory channel map:
-	// The map is itself an array of maps where at each index
-	// is a mapping of IPv6 prefixes from the RIR delegation file
-	// of the RIR at that index to their Zorra channel ID
-	channelMap []map[string]int
+	channelMap map[string]int
 )
-
-func init() {
-	// Initialize the map to handle missing or corrupt data file
-	channelMap = make([]map[string]int, 5)
-	channelMap[APNIC] = make(map[string]int)
-	channelMap[AFRINIC] = make(map[string]int)
-	channelMap[ARIN] = make(map[string]int)
-	channelMap[LACNIC] = make(map[string]int)
-	channelMap[RIPE] = make(map[string]int)
-}
 
 // LoadChannelMap parses the embedded channel map data
 func LoadChannelMap() error {
+	channelMap = make(map[string]int)
 	gzr, err := gzip.NewReader(bytes.NewBuffer(channelMapRaw))
 	if err != nil {
 		return err
@@ -50,22 +38,18 @@ func LoadChannelMap() error {
 }
 
 // ChannelOf returns the channel ID of an IPv6 prefix, if it exists in the map
-func ChannelOf(rir RIR, prefix string) (int, bool) {
-	if rir == UnknownRIR {
-		return 0, false
-	}
-
-	ch, ok := channelMap[rir][prefix]
+func ChannelOf(prefix string) (int, bool) {
+	ch, ok := channelMap[prefix]
 	return ch, ok
 }
 
 // AddChannel adds a new channel to the channel map
-func AddChannel(rir RIR, prefix string) {
-	if _, ok := ChannelOf(rir, prefix); ok {
+func AddChannel(prefix string) {
+	if _, ok := ChannelOf(prefix); ok {
 		return
 	}
 
-	channelMap[rir][prefix] = len(channelMap[rir])
+	channelMap[prefix] = len(channelMap)
 }
 
 // SaveChannels writes the channel map to the disk
