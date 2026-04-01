@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"regexp"
 
 	"github.com/cbeimers113/zorra/internal/log"
 )
@@ -21,11 +22,8 @@ const (
 	// File within the Zorra dir containing this peer's known hosts
 	knownHostsFile = "known_hosts"
 
-	// The default username to use when we can't determine the actual one
-	defaultUsername = "zorra-user"
-
-	// The default hostname to use when we can't determine the actual one
-	defaultHostname = "zorra-host"
+	// The default identity to use when we can't determine the user's username
+	defaultIdentity = "zorra-user"
 )
 
 var (
@@ -61,22 +59,17 @@ func init() {
 			log.Warnf("Unable to read identity: %s", err.Error())
 		}
 
-		username := defaultUsername
+		username := defaultIdentity
 		if currentUser, err := user.Current(); err != nil {
-			log.Warnf("Unable to determine username, falling back to %q: %s", defaultUsername, err.Error())
+			log.Warnf("Unable to determine username, falling back to %q: %s", defaultIdentity, err.Error())
 		} else {
 			username = currentUser.Username
 		}
 
-		hostname, err := os.Hostname()
-		if err != nil {
-			log.Warnf("Unable to determine hostname, falling back to %q: %s", defaultHostname, err.Error())
-			hostname = defaultHostname
-		}
-
-		SetIdentity(username + "@" + hostname)
+		SetIdentity(username)
 	} else {
-		identity = string(idBytes)
+		re := regexp.MustCompile(`\s+`)
+		identity = re.ReplaceAllString(string(idBytes), "")
 	}
 
 	// Initialize and read known hosts

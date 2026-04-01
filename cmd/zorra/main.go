@@ -18,7 +18,7 @@ func main() {
 	)
 	defer stop()
 
-	if err := addressing.LoadChannelMap(); err != nil {
+	if err := addressing.LoadChannels(); err != nil {
 		log.Warnf("Unable to load channel map: %s", err.Error())
 	}
 

@@ -18,6 +18,7 @@ var shareCmd = &cobra.Command{
 		}
 
 		log.Infof("Zorra share code: %s", shareCode)
+		addressing.ReadShareCode(shareCode)
 	},
 }
 

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/netip"
 	"os"
 	"strings"
 
@@ -24,8 +25,8 @@ var sources = map[string]string{
 }
 
 // readSource reads an RIR delegation file and returns a slice of IPv6 prefixes
-func readSource(rir string, source string) ([]string, error) {
-	var prefixes []string
+func readSource(rir string, source string) ([]netip.Prefix, error) {
+	var prefixes []netip.Prefix
 	log.Infof("Reading RIR delegation file of %s...", rir)
 
 	rsp, err := http.Get(source)
@@ -47,8 +48,16 @@ func readSource(rir string, source string) ([]string, error) {
 			continue
 		}
 
+		// Construct the prefix from the CIDR notation value
+		cidr := cols[3] + "/" + cols[4]
+		prefix, err := netip.ParsePrefix(cidr)
+		if err != nil {
+			log.Warnf("Invalid CIDR-notation IPv6 prefix %q in %s delegation file: %s", cidr, rir, err.Error())
+			continue
+		}
+
 		// Skip prefixes already in the map
-		prefix := cols[3] + cols[4]
+    prefix = prefix.Masked()
 		if _, ok := addressing.ChannelOf(prefix); ok {
 			continue
 		}
@@ -61,13 +70,13 @@ func readSource(rir string, source string) ([]string, error) {
 
 func main() {
 	log.Info("Updating channel map from RIR delegation files")
-	if err := addressing.LoadChannelMap(); err != nil {
+	if err := addressing.LoadChannels(); err != nil {
 		log.Warnf("Unable to read existing channel map: %s, rebuilding...", err.Error())
 	}
 
 	dirty := false
 	fmt.Println()
-	
+
 	// Update each RIR's channels from their delegation file
 	for rir, source := range sources {
 		prefixes, err := readSource(rir, source)
@@ -90,7 +99,7 @@ func main() {
 		log.Infof("Done updating %s\n", rir)
 	}
 
-  if !dirty {
+	if !dirty {
 		log.Info("No channel map updates needed")
 		return
 	}
