@@ -11,7 +11,13 @@ var shareCmd = &cobra.Command{
 	Use:   "share",
 	Short: "Determine your Zorra share code",
 	Run: func(*cobra.Command, []string) {
-		shareCode, err := addressing.CreateShareCode()
+		ephem, err := addressing.EphemeralIPv6()
+		if err != nil {
+			log.Errorf("Unable to create ephemeral IPv6 address: %s", err.Error())
+			return
+		}
+
+		shareCode, err := addressing.CreateShareCode(ephem)
 		if err != nil {
 			log.Errorf("Unable to determine share code: %s", err.Error())
 			return

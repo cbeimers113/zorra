@@ -55,7 +55,7 @@ func LoadChannels() error {
 			continue
 		}
 
-	  channelMap[prefix.Masked()] = channel
+		channelMap[prefix.Masked()] = channel
 		prefixMap[channel] = prefix
 	}
 
@@ -74,7 +74,8 @@ func PrefixOf(channel int) (netip.Prefix, bool) {
 	return prefix, ok
 }
 
-// AddChannel adds a new channel to the channel map
+// AddChannel adds a new channel to the channel map;
+// it is called only by the channel update ETL process
 func AddChannel(prefix netip.Prefix) {
 	if _, ok := ChannelOf(prefix); ok {
 		return
@@ -83,7 +84,8 @@ func AddChannel(prefix netip.Prefix) {
 	channelMap[prefix] = len(channelMap)
 }
 
-// SaveChannels writes the channel map to the disk
+// SaveChannels writes the channel map to the disk;
+// it is called only by the channel update ETL process
 func SaveChannels() error {
 	// Convert the channel map into an intermediate mapping of CIDR prefixes to channels
 	cidrMap := make(map[string]int)

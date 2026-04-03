@@ -8,6 +8,7 @@ import (
 	"os/user"
 	"path/filepath"
 	"regexp"
+	"testing"
 
 	"github.com/cbeimers113/zorra/internal/log"
 )
@@ -85,6 +86,10 @@ func init() {
 
 // Identity returns this peer's identity
 func Identity() string {
+	if testing.Testing() {
+		return TestIdentity
+	}
+
 	return identity
 }
 

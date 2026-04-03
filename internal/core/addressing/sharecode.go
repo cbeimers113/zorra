@@ -8,18 +8,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/cbeimers113/zorra/internal/log"
 	"github.com/cbeimers113/zorra/internal/state"
 )
 
 // CreateShareCode determines this peer's ephemeral IPv6 address,
 // channel, and identity and encodes them into a share code
-func CreateShareCode() (string, error) {
-	ephem, err := ephemeralIPv6()
-	if err != nil {
-		return "", err
-	}
-
+func CreateShareCode(ephem net.IP) (string, error) {
 	// Parse the ephemeral IPv6 address
 	addr, ok := netip.AddrFromSlice(ephem)
 	if !ok {
@@ -56,7 +50,7 @@ func CreateShareCode() (string, error) {
 	// ID: no encoding, easiest for human-to-human transfer
 	// opaque bits: base64, best balance of compact and readable
 	// channel: hex, small channel space and easy to work with
-	shareCode := state.Identity() + "." + base64.StdEncoding.EncodeToString(opaque) + "."
+	shareCode := state.Identity() + "." + base64.RawURLEncoding.EncodeToString(opaque) + "."
 
 	// If no channel was found, use a non-numerical "no channel" identifier
 	if bits == 0 {
@@ -99,13 +93,24 @@ func ReadShareCode(shareCode string) (net.IP, error) {
 	}
 
 	// Parse the opaque bits
-	opaque, err := base64.StdEncoding.DecodeString(encOpaque)
+	opaque, err := base64.RawURLEncoding.DecodeString(encOpaque)
 	if err != nil {
 		return nil, fmt.Errorf("could not decode opaque bits %q: %w", encOpaque, err)
 	}
 
 	// Combine the prefix and opaque bits into the first half of the IPv6 address
-	var addr [16]byte
-	// TODO: Pick up here
-	return nil, nil
+	arr := prefix.Addr().As16()
+	start := max(0, prefix.Bits()) / 8
+	for i := range 8 - start {
+		arr[start+i] |= opaque[i]
+	}
+
+	// Hash the identity and fill in the remainder of the address
+	addr := net.IP(arr[:])
+	idHash := hashString(encID, 2)
+	for i, b := range append(idHash, zorraHash...) {
+		addr[8+i] = b
+	}
+
+	return addr, nil
 }
