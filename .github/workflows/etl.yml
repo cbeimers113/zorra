@@ -1,0 +1,28 @@
+name: Channel Map ETL 
+
+on:
+  schedule:
+    - cron: '0 12 * * *'
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      
+      - name: Run ETL Process
+        run: go run ./cmd/etl/main.go
+
+      - name: Update Tracking Issue 
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -f ./channel-map.gz ]; then
+            MESSAGE="✅ $(date -u '+%Y-%m-%d') — update produced"
+          else
+            MESSAGE="❌ $(date -u '+%Y-%m-%d') — no update"
+          fi
+          gh issue comment 1 --body "$MESSAGE" 
