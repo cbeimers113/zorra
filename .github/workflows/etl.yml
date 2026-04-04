@@ -2,7 +2,8 @@ name: Channel Map ETL
 
 on:
   schedule:
-    - cron: '0 14 * * *'
+    - cron: '0 21 * * *'
+  workflow_dispatch:
 
 jobs:
   update:
@@ -16,15 +17,18 @@ jobs:
           go-version-file: go.mod
       
       - name: Run ETL Process
+        id: etl
         run: go run ./cmd/etl/main.go
 
       - name: Update Tracking Issue 
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if [ -f ./channel-map.gz ]; then
-            MESSAGE="✅ $(date -u '+%Y-%m-%d') — update produced"
-          else
-            MESSAGE="❌ $(date -u '+%Y-%m-%d') — no update"
-          fi
-          gh issue comment 1 --body "$MESSAGE" 
+          if [ "${{ steps.etl.outcome }}" == "failure" ]; then
+      MESSAGE="💥 failure"
+    elif [ -f ./channel-map.gz ]; then
+      MESSAGE="🟢 update produced"
+    else
+      MESSAGE="🔴 no update"
+    fi
+    gh issue comment 1 --body "$(date -u '+%Y-%m-%d') $MESSAGE"
