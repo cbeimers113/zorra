@@ -25,10 +25,10 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [ "${{ steps.etl.outcome }}" == "failure" ]; then
-      MESSAGE="💥 failure"
-    elif [ -f ./channel-map.gz ]; then
-      MESSAGE="🟢 update produced"
-    else
-      MESSAGE="🔴 no update"
-    fi
-    gh issue comment 1 --body "$(date -u '+%Y-%m-%d') $MESSAGE"
+            MESSAGE="💥 failure"
+          elif [ -f ./channel-map.gz ]; then
+            MESSAGE="🟢 update produced"
+          else
+            MESSAGE="🔴 no update"
+          fi
+          gh issue comment 1 --body "$(date -u '+%Y-%m-%d') $MESSAGE"
