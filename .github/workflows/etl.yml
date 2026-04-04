@@ -12,7 +12,8 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v4
-        ref: rir-tracking
+        with:
+          ref: rir-tracking
 
       - uses: actions/setup-go@v5
         with:
@@ -20,7 +21,9 @@ jobs:
       
       - name: Run ETL Process
         id: etl
-        run: go run ./cmd/etl/main.go
+        run: |
+          go run ./cmd/etl/main.go
+          [ -f ./channel-map.gz ] && mv ./channel-map.gz ./internal/core/addressing/data/channel-map.gz
 
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
@@ -36,7 +39,6 @@ jobs:
             MESSAGE="💥 failure"
           elif [ -f ./channel-map.gz ]; then
             MESSAGE="🟢 update produced"
-            mv ./channel-map.gz ./internal/core/addressing/data/channel-map.gz
           else
             MESSAGE="🔴 no update"
           fi
