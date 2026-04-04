@@ -1,4 +1,4 @@
-name: CI
+name: Zorra Dev CI
 
 on:
   push:
