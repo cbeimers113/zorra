@@ -12,6 +12,8 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v4
+        ref: rir-tracking
+
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
@@ -19,6 +21,12 @@ jobs:
       - name: Run ETL Process
         id: etl
         run: go run ./cmd/etl/main.go
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update channel map"
+          file_pattern: ./internal/core/addressing/data/channel-map.gz
+          branch: rir-tracking
 
       - name: Update Tracking Issue 
         env:
@@ -28,6 +36,7 @@ jobs:
             MESSAGE="💥 failure"
           elif [ -f ./channel-map.gz ]; then
             MESSAGE="🟢 update produced"
+            mv ./channel-map.gz ./internal/core/addressing/data/channel-map.gz
           else
             MESSAGE="🔴 no update"
           fi
