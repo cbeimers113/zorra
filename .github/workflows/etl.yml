@@ -23,7 +23,7 @@ jobs:
       - name: Run ETL Process
         id: etl
         run: |
-          go run ./cmd/etl/main.gz
+          go run ./cmd/etl/main.go
 
       - name: Update Tracking Issue 
         env:
