@@ -1,12 +1,15 @@
-package addressing
+// Package hash_test implements unit tests for the hash package
+package hash_test
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/cbeimers113/zorra/internal/hash"
 )
 
-func Test_addressing_hashString(t *testing.T) {
+func Test_address_hashString(t *testing.T) {
 	tests := map[string]struct {
 		str  string
 		size uint8
@@ -39,7 +42,7 @@ func Test_addressing_hashString(t *testing.T) {
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, tt.want, hashString(tt.str, tt.size))
+			assert.Equal(t, tt.want, hash.String(tt.str, tt.size))
 		})
 	}
 }

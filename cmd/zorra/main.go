@@ -5,8 +5,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/cbeimers113/zorra/internal/channel"
 	"github.com/cbeimers113/zorra/internal/cli"
-	"github.com/cbeimers113/zorra/internal/core/addressing"
 	"github.com/cbeimers113/zorra/internal/log"
 )
 
@@ -18,7 +18,7 @@ func main() {
 	)
 	defer stop()
 
-	if err := addressing.LoadChannels(); err != nil {
+	if err := channel.LoadChannels(); err != nil {
 		log.Warnf("Unable to load channel map: %s", err.Error())
 	}
 

@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/cbeimers113/zorra/internal/log"
+	"github.com/cbeimers113/zorra/internal/testdata"
 )
 
 const (
@@ -87,7 +88,7 @@ func init() {
 // Identity returns this peer's identity
 func Identity() string {
 	if testing.Testing() {
-		return TestIdentity
+		return testdata.Identity
 	}
 
 	return identity

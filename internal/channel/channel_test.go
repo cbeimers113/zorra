@@ -1,12 +1,23 @@
-package addressing_test
+// Package channel_test implements unit tests for the channel package
+package channel_test
 
 import (
 	"net/netip"
+	"os"
 	"testing"
 
-	"github.com/cbeimers113/zorra/internal/core/addressing"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/cbeimers113/zorra/internal/channel"
 )
+
+func TestMain(m *testing.M) {
+	if err := channel.LoadChannels(); err != nil {
+		panic(err)
+	}
+
+	os.Exit(m.Run())
+}
 
 func Test_addressing_ChannelOf(t *testing.T) {
 	tests := map[string]struct {
@@ -28,7 +39,7 @@ func Test_addressing_ChannelOf(t *testing.T) {
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			got, ok := addressing.ChannelOf(tt.prefix)
+			got, ok := channel.ChannelOf(tt.prefix)
 			assert.Equal(t, tt.wantChannel, got)
 			assert.Equal(t, tt.wantOk, ok)
 		})
@@ -55,7 +66,7 @@ func Test_addressing_PrefixOf(t *testing.T) {
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			got, ok := addressing.PrefixOf(tt.channel)
+			got, ok := channel.PrefixOf(tt.channel)
 			assert.Equal(t, tt.wantPrefix, got)
 			assert.Equal(t, tt.wantOk, ok)
 		})
@@ -80,11 +91,11 @@ func Test_addressing_AddChannel(t *testing.T) {
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			current, ok := addressing.ChannelOf(tt.prefix)
+			current, ok := channel.ChannelOf(tt.prefix)
 			assert.Equal(t, tt.wantAdd, !ok)
 
-			addressing.AddChannel(tt.prefix)
-			added, ok := addressing.ChannelOf(tt.prefix)
+			channel.AddChannel(tt.prefix)
+			added, ok := channel.ChannelOf(tt.prefix)
 			assert.True(t, ok)
 			assert.Equal(t, tt.wantAdd, added != current)
 		})

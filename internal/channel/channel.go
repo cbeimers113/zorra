@@ -1,4 +1,5 @@
-package addressing
+// Package channel implements IPv6 prefix-channel conversions
+package channel
 
 import (
 	"bytes"

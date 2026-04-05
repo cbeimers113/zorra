@@ -1,13 +1,25 @@
-package addressing_test
+// Package sharecode_test implements unit tests for the sharecode package
+package sharecode_test
 
 import (
 	"net"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/cbeimers113/zorra/internal/core/addressing"
+	"github.com/cbeimers113/zorra/internal/channel"
+	"github.com/cbeimers113/zorra/internal/sharecode"
+	"github.com/cbeimers113/zorra/internal/testdata"
 )
+
+func TestMain(m *testing.M) {
+	if err := channel.LoadChannels(); err != nil {
+		panic(err)
+	}
+
+	os.Exit(m.Run())
+}
 
 func Test_addressing_CreateShareCode(t *testing.T) {
 	tests := map[string]struct {
@@ -16,18 +28,18 @@ func Test_addressing_CreateShareCode(t *testing.T) {
 		wantErrMsg string
 	}{
 		"Happy path - channel exists": {
-			ephem: addressing.TestEphemAddrHasChannel,
-			want:  addressing.TestShareCodeHasChannel,
+			ephem: testdata.EphemAddrHasChannel,
+			want:  testdata.ShareCodeHasChannel,
 		},
 
 		"Happy path - no channel": {
-			ephem: addressing.TestEphemAddrNoChannel,
-			want:  addressing.TestShareCodeNoChannel,
+			ephem: testdata.EphemAddrNoChannel,
+			want:  testdata.ShareCodeNoChannel,
 		},
 
 		"Happy path - channel ends on byte boundary": {
-			ephem: addressing.TestEphemAddrByteBoundary,
-			want:  addressing.TestShareCodeByteBoundary,
+			ephem: testdata.EphemAddrByteBoundary,
+			want:  testdata.ShareCodeByteBoundary,
 		},
 
 		"Sad path - invalid IPv6 address": {
@@ -38,7 +50,7 @@ func Test_addressing_CreateShareCode(t *testing.T) {
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			got, err := addressing.CreateShareCode(tt.ephem)
+			got, err := sharecode.CreateShareCode(tt.ephem)
 			assert.Equal(t, tt.want, got)
 
 			if tt.wantErrMsg == "" {
@@ -57,18 +69,18 @@ func Test_addressing_ReadShareCode(t *testing.T) {
 		wantErrMsg string
 	}{
 		"Happy path - channel exists": {
-			shareCode: addressing.TestShareCodeHasChannel,
-			want:      addressing.TestEphemAddrHasChannel,
+			shareCode: testdata.ShareCodeHasChannel,
+			want:      testdata.EphemAddrHasChannel,
 		},
 
 		"Happy path - no channel": {
-			shareCode: addressing.TestShareCodeNoChannel,
-			want:      addressing.TestEphemAddrNoChannel,
+			shareCode: testdata.ShareCodeNoChannel,
+			want:      testdata.EphemAddrNoChannel,
 		},
 
 		"Happy path - channel ends on byte boundary": {
-			shareCode: addressing.TestShareCodeByteBoundary,
-			want:      addressing.TestEphemAddrByteBoundary,
+			shareCode: testdata.ShareCodeByteBoundary,
+			want:      testdata.EphemAddrByteBoundary,
 		},
 
 		"Sad path - invalid share code": {
@@ -94,7 +106,7 @@ func Test_addressing_ReadShareCode(t *testing.T) {
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			got, err := addressing.ReadShareCode(tt.shareCode)
+			got, err := sharecode.ReadShareCode(tt.shareCode)
 			assert.Equal(t, tt.want, got)
 
 			if tt.wantErrMsg == "" {

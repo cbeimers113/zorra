@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/cbeimers113/zorra/internal/core/addressing"
+	"github.com/cbeimers113/zorra/internal/channel"
 	"github.com/cbeimers113/zorra/internal/log"
 )
 
@@ -57,8 +57,8 @@ func readSource(rir string, source string) ([]netip.Prefix, error) {
 		}
 
 		// Skip prefixes already in the map
-    prefix = prefix.Masked()
-		if _, ok := addressing.ChannelOf(prefix); ok {
+		prefix = prefix.Masked()
+		if _, ok := channel.ChannelOf(prefix); ok {
 			continue
 		}
 
@@ -70,7 +70,7 @@ func readSource(rir string, source string) ([]netip.Prefix, error) {
 
 func main() {
 	log.Info("Updating channel map from RIR delegation files")
-	if err := addressing.LoadChannels(); err != nil {
+	if err := channel.LoadChannels(); err != nil {
 		log.Warnf("Unable to read existing channel map: %s, rebuilding...", err.Error())
 	}
 
@@ -93,7 +93,7 @@ func main() {
 		dirty = true
 		log.Infof("Creating %d new channels for %s", len(prefixes), rir)
 		for _, prefix := range prefixes {
-			addressing.AddChannel(prefix)
+			channel.AddChannel(prefix)
 		}
 
 		log.Infof("Done updating %s\n", rir)
@@ -105,7 +105,7 @@ func main() {
 	}
 
 	// Save the channel map to disk
-	if err := addressing.SaveChannels(); err != nil {
+	if err := channel.SaveChannels(); err != nil {
 		log.Errorf("Unable to save channel map file: %s", err.Error())
 		os.Exit(1)
 	}

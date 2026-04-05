@@ -1,4 +1,5 @@
-package addressing
+// Package sharecode implements logic for creating and parsing address share codes
+package sharecode
 
 import (
 	"encoding/base64"
@@ -8,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/cbeimers113/zorra/internal/channel"
+	"github.com/cbeimers113/zorra/internal/hash"
 	"github.com/cbeimers113/zorra/internal/state"
 )
 
@@ -22,9 +25,9 @@ func CreateShareCode(ephem net.IP) (string, error) {
 
 	// Find the longest IPv6 prefix of this address that's in the channel map
 	bits := 64
-	channel := 0
+	ch := 0
 	for bits > 0 {
-		if channel, ok = ChannelOf(netip.PrefixFrom(addr, bits).Masked()); ok {
+		if ch, ok = channel.ChannelOf(netip.PrefixFrom(addr, bits).Masked()); ok {
 			break
 		}
 
@@ -56,7 +59,7 @@ func CreateShareCode(ephem net.IP) (string, error) {
 	if bits == 0 {
 		shareCode += "_"
 	} else {
-		shareCode += fmt.Sprintf("%x", channel)
+		shareCode += fmt.Sprintf("%x", ch)
 	}
 
 	return shareCode, nil
@@ -81,12 +84,12 @@ func ReadShareCode(shareCode string) (net.IP, error) {
 
 	// Parse the channel into a prefix if applicable
 	if encChannel != "_" {
-		channel, err := strconv.ParseUint(encChannel, 16, 64)
+		ch, err := strconv.ParseUint(encChannel, 16, 64)
 		if err != nil {
 			return nil, fmt.Errorf("invalid channel: %q", encChannel)
 		}
 
-		prefix, ok = PrefixOf(int(channel))
+		prefix, ok = channel.PrefixOf(int(ch))
 		if !ok {
 			return nil, fmt.Errorf("unknown channel: %q", encChannel)
 		}
@@ -107,8 +110,8 @@ func ReadShareCode(shareCode string) (net.IP, error) {
 
 	// Hash the identity and fill in the remainder of the address
 	addr := net.IP(arr[:])
-	idHash := hashString(encID, 2)
-	for i, b := range append(idHash, zorraHash...) {
+	idHash := hash.String(encID, 2)
+	for i, b := range append(idHash, hash.Zorra...) {
 		addr[8+i] = b
 	}
 
