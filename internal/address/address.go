@@ -9,16 +9,16 @@ import (
 	"github.com/vishvananda/netlink"
 
 	"github.com/cbeimers113/zorra/internal/hash"
+	"github.com/cbeimers113/zorra/internal/identity"
 	"github.com/cbeimers113/zorra/internal/log"
-	"github.com/cbeimers113/zorra/internal/state"
 )
 
-// EphemeralIPv6 returns this peer's ephemeral IPv6 address:
+// Ephemeral returns this peer's ephemeral IPv6 address:
 // a Zorra-specific IPv6 address for this peer to use in this session.
 // Format:
 // | ISP prefix, customer ID, subnet | ID hash | Zorra hash |
 // |            64 bits              | 16 bits |   48 bits  |
-func EphemeralIPv6() (net.IP, error) {
+func Ephemeral() (net.IP, error) {
 	links, err := netlink.LinkList()
 	if err != nil {
 		return nil, fmt.Errorf("could not find network interfaces: %w", err)
@@ -40,7 +40,7 @@ func EphemeralIPv6() (net.IP, error) {
 
 			// Hash this peer's identity and fill in the second half of the address
 			addr := addr.IP.Mask(net.CIDRMask(64, 128))
-			idHash := hash.String(state.Identity(), 2)
+			idHash := hash.String(identity.This(), 2)
 			for i, b := range append(idHash, hash.Zorra...) {
 				addr[8+i] = b
 			}
@@ -53,14 +53,14 @@ func EphemeralIPv6() (net.IP, error) {
 	return nil, errors.New("no globally addressable IPv6 addresses available")
 }
 
-// RegisterEphemeralIPv6 registers the ephemeral IPv6 address on the given network interface
-func RegisterEphemeralIPv6(addr net.IP, iface string) {
+// Register registers the given address on the given network interface
+func Register(addr net.IP, iface string) {
 	// TODO: address registration
 	log.Debugf("Registering address %q on interface %q", addr.String(), iface)
 }
 
-// DeregisterEphemeralIPv6 removes the ephemeral IPv6 address from the given network interface
-func DeregisterEphemeralIPv6(addr net.IP, iface string) {
+// Deregister removes the given address from the given network interface
+func Deregister(addr net.IP, iface string) {
 	// TODO: address deregistration
 	log.Debugf("Deregistering address %q from interface %q", addr.String(), iface)
 }

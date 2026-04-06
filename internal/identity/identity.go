@@ -1,5 +1,5 @@
-// Package state implements logic to read and write Zorra state data on the disk
-package state
+// Package identity implements logic for managing Zorra identities
+package identity
 
 import (
 	"encoding/json"
@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	// Where Zorra state data is stored in the user home directory
+	// Where Zorra data is stored in the user home directory
 	zorraDir = ".zorra"
 
 	// File within the Zorra dir containing this peer's identity
@@ -33,12 +33,13 @@ var (
 	zorraDirPath string
 
 	// This peer's identity
-	identity string
+	identity string = defaultIdentity
 
 	// This peer's known hosts
 	knownHosts map[string]string
 )
 
+// init reads identity data when this package is first used at runtime
 func init() {
 	home, err := os.UserHomeDir()
 	if err != nil {
@@ -68,7 +69,7 @@ func init() {
 			username = currentUser.Username
 		}
 
-		SetIdentity(username)
+		SetThis(username)
 	} else {
 		re := regexp.MustCompile(`\s+`)
 		identity = re.ReplaceAllString(string(idBytes), "")
@@ -85,8 +86,8 @@ func init() {
 	}
 }
 
-// Identity returns this peer's identity
-func Identity() string {
+// This returns this peer's identity
+func This() string {
 	if testing.Testing() {
 		return testdata.Identity
 	}
@@ -94,8 +95,8 @@ func Identity() string {
 	return identity
 }
 
-// SetIdentity sets this peer's identity
-func SetIdentity(id string) {
+// SetThis sets this peer's identity
+func SetThis(id string) {
 	identity = id
 	log.Infof("Set identity to %q", id)
 

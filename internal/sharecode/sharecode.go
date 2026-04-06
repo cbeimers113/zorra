@@ -11,7 +11,7 @@ import (
 
 	"github.com/cbeimers113/zorra/internal/channel"
 	"github.com/cbeimers113/zorra/internal/hash"
-	"github.com/cbeimers113/zorra/internal/state"
+	"github.com/cbeimers113/zorra/internal/identity"
 )
 
 // CreateShareCode determines this peer's ephemeral IPv6 address,
@@ -53,7 +53,7 @@ func CreateShareCode(ephem net.IP) (string, error) {
 	// ID: no encoding, easiest for human-to-human transfer
 	// opaque bits: base64, best balance of compact and readable
 	// channel: hex, small channel space and easy to work with
-	shareCode := state.Identity() + "." + base64.RawURLEncoding.EncodeToString(opaque) + "."
+	shareCode := identity.This() + "." + base64.RawURLEncoding.EncodeToString(opaque) + "."
 
 	// If no channel was found, use a non-numerical "no channel" identifier
 	if bits == 0 {
