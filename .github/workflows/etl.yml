@@ -33,7 +33,7 @@ jobs:
             MESSAGE="💥 failure"
           elif [ -f ./channel-map.gz ]; then
             MESSAGE="🟢 update produced"
-            mv channel-map.gz ./internal/core/addressing/data/channel-map.gz
+            mv channel-map.gz ./internal/channel/data/channel-map.gz
           else
             MESSAGE="🔴 no update"
           fi
@@ -42,5 +42,5 @@ jobs:
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: update channel map"
-          file_pattern: ./internal/core/addressing/data/channel-map.gz
+          file_pattern: ./internal/channel/data/channel-map.gz
           branch: rir-tracking
