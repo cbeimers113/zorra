@@ -13,13 +13,27 @@ import (
 	"github.com/cbeimers113/zorra/internal/log"
 )
 
+// LinkList is a late-bound function that returns a slice of netlink.Link
+// representing the network interfaces found on this device. The production
+// implmentation is provided by vishvananda/netlink and wraps syscalls to the
+// netlink kernel module. It can be reassigned to mock its response in tests.
+var LinkList func() ([]netlink.Link, error) = netlink.LinkList
+
+// AddrList is a late-bound function that returns a list of addresses on
+// a network interface, optionally filtered by family. The production
+// implementation is provided by vishvananda/netlink and wraps syscalls to
+// the netlink kernel module. It can be reassigned to mock its response in tests.
+var AddrList func(netlink.Link, int) ([]netlink.Addr, error) = netlink.AddrList
+
 // Ephemeral returns this peer's ephemeral IPv6 address:
 // a Zorra-specific IPv6 address for this peer to use in this session.
+// Requires the user's ISP to provide IPv6 and an existing globally
+// addressable IPv6 address to use as a base.
 // Format:
 // | ISP prefix, customer ID, subnet | ID hash | Zorra hash |
 // |            64 bits              | 16 bits |   48 bits  |
 func Ephemeral() (net.IP, error) {
-	links, err := netlink.LinkList()
+	links, err := LinkList()
 	if err != nil {
 		return nil, fmt.Errorf("could not find network interfaces: %w", err)
 	}
@@ -27,7 +41,7 @@ func Ephemeral() (net.IP, error) {
 	// Find an interface with IPv6 addresses
 	for _, link := range links {
 		iface := link.Attrs().Name
-		addrs, err := netlink.AddrList(link, netlink.FAMILY_V6)
+		addrs, err := AddrList(link, netlink.FAMILY_V6)
 		if err != nil {
 			return nil, fmt.Errorf("could not list addresses on interface %q: %w", iface, err)
 		}

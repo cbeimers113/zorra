@@ -10,7 +10,7 @@ import (
 
 	"github.com/cbeimers113/zorra/internal/channel"
 	"github.com/cbeimers113/zorra/internal/sharecode"
-	"github.com/cbeimers113/zorra/internal/testdata"
+	"github.com/cbeimers113/zorra/internal/test"
 )
 
 func TestMain(m *testing.M) {
@@ -28,18 +28,18 @@ func Test_addressing_CreateShareCode(t *testing.T) {
 		wantErrMsg string
 	}{
 		"Happy path - channel exists": {
-			ephem: testdata.EphemAddrHasChannel,
-			want:  testdata.ShareCodeHasChannel,
+			ephem: test.EphemAddrHasChannel,
+			want:  test.ShareCodeHasChannel,
 		},
 
 		"Happy path - no channel": {
-			ephem: testdata.EphemAddrNoChannel,
-			want:  testdata.ShareCodeNoChannel,
+			ephem: test.EphemAddrNoChannel,
+			want:  test.ShareCodeNoChannel,
 		},
 
 		"Happy path - channel ends on byte boundary": {
-			ephem: testdata.EphemAddrByteBoundary,
-			want:  testdata.ShareCodeByteBoundary,
+			ephem: test.EphemAddrByteBoundary,
+			want:  test.ShareCodeByteBoundary,
 		},
 
 		"Sad path - invalid IPv6 address": {
@@ -69,18 +69,18 @@ func Test_addressing_ReadShareCode(t *testing.T) {
 		wantErrMsg string
 	}{
 		"Happy path - channel exists": {
-			shareCode: testdata.ShareCodeHasChannel,
-			want:      testdata.EphemAddrHasChannel,
+			shareCode: test.ShareCodeHasChannel,
+			want:      test.EphemAddrHasChannel,
 		},
 
 		"Happy path - no channel": {
-			shareCode: testdata.ShareCodeNoChannel,
-			want:      testdata.EphemAddrNoChannel,
+			shareCode: test.ShareCodeNoChannel,
+			want:      test.EphemAddrNoChannel,
 		},
 
 		"Happy path - channel ends on byte boundary": {
-			shareCode: testdata.ShareCodeByteBoundary,
-			want:      testdata.EphemAddrByteBoundary,
+			shareCode: test.ShareCodeByteBoundary,
+			want:      test.EphemAddrByteBoundary,
 		},
 
 		"Sad path - invalid share code": {
