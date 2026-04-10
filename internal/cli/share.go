@@ -18,7 +18,7 @@ var shareCmd = &cobra.Command{
 			return
 		}
 
-		shareCode, err := sharecode.CreateShareCode(ephem)
+		shareCode, err := sharecode.Create(ephem)
 		if err != nil {
 			log.Errorf("Unable to determine share code: %s", err.Error())
 			return

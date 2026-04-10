@@ -14,9 +14,9 @@ import (
 	"github.com/cbeimers113/zorra/internal/identity"
 )
 
-// CreateShareCode determines this peer's ephemeral IPv6 address,
+// Create determines this peer's ephemeral IPv6 address,
 // channel, and identity and encodes them into a share code
-func CreateShareCode(ephem net.IP) (string, error) {
+func Create(ephem net.IP) (string, error) {
 	// Parse the ephemeral IPv6 address
 	addr, ok := netip.AddrFromSlice(ephem)
 	if !ok {
@@ -65,8 +65,8 @@ func CreateShareCode(ephem net.IP) (string, error) {
 	return shareCode, nil
 }
 
-// ReadShareCode parses a share code into an IPv6 address
-func ReadShareCode(shareCode string) (net.IP, error) {
+// Read parses a share code into an IPv6 address
+func Read(shareCode string) (net.IP, error) {
 	parts := strings.Split(shareCode, ".")
 	if len(parts) < 3 {
 		return nil, fmt.Errorf("invalid share code: %q", shareCode)

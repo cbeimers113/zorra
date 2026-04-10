@@ -21,7 +21,7 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func Test_addressing_CreateShareCode(t *testing.T) {
+func Test_sharecode_Create(t *testing.T) {
 	tests := map[string]struct {
 		ephem      net.IP
 		want       string
@@ -50,7 +50,7 @@ func Test_addressing_CreateShareCode(t *testing.T) {
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			got, err := sharecode.CreateShareCode(tt.ephem)
+			got, err := sharecode.Create(tt.ephem)
 			assert.Equal(t, tt.want, got)
 
 			if tt.wantErrMsg == "" {
@@ -62,7 +62,7 @@ func Test_addressing_CreateShareCode(t *testing.T) {
 	}
 }
 
-func Test_addressing_ReadShareCode(t *testing.T) {
+func Test_sharecode_Read(t *testing.T) {
 	tests := map[string]struct {
 		shareCode  string
 		want       net.IP
@@ -106,7 +106,7 @@ func Test_addressing_ReadShareCode(t *testing.T) {
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			got, err := sharecode.ReadShareCode(tt.shareCode)
+			got, err := sharecode.Read(tt.shareCode)
 			assert.Equal(t, tt.want, got)
 
 			if tt.wantErrMsg == "" {

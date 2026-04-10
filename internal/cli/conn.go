@@ -4,11 +4,12 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/cbeimers113/zorra/internal/address"
+	"github.com/cbeimers113/zorra/internal/identity"
 	"github.com/cbeimers113/zorra/internal/log"
 )
 
 var connCmd = &cobra.Command{
-	Use:   "conn <peer's share code>",
+	Use:   "conn <sharecode>",
 	Short: "Request a connection with a peer",
 	Args:  cobra.ExactArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
@@ -29,7 +30,17 @@ var connCmd = &cobra.Command{
 			}
 		}()
 
-		log.Infof("Requesting connection with %q...", args[0])
+		peer := args[0]
+		log.Infof("Requesting connection with %s...", peer)
+
+		if identity.IsKnown(args[0]) {
+			// If peer is known, initiate a Noise IK handshake
+			// TODO
+			log.Debugf("Initiating Noise IK handshake with %s...", peer)
+		} else {
+			// If unknown, initiate an NNpsk0 handshake and TOFU prompt
+			log.Debugf("Initiating Noise NNpsk0 handshake with %s...", peer)
+		}
 	},
 }
 

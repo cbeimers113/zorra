@@ -8,10 +8,8 @@ import (
 	"os/user"
 	"path/filepath"
 	"regexp"
-	"testing"
 
 	"github.com/cbeimers113/zorra/internal/log"
-	"github.com/cbeimers113/zorra/internal/test"
 )
 
 const (
@@ -21,8 +19,8 @@ const (
 	// File within the Zorra dir containing this peer's identity
 	identityFile = "identity"
 
-	// File within the Zorra dir containing this peer's known hosts
-	knownHostsFile = "known_hosts"
+	// File within the Zorra dir containing this peer's known peers' public keys
+	knownPeersFile = "known_peers"
 
 	// The default identity to use when we can't determine the user's username
 	defaultIdentity = "zorra-user"
@@ -35,8 +33,8 @@ var (
 	// This peer's identity
 	identity string = defaultIdentity
 
-	// This peer's known hosts
-	knownHosts map[string]string
+	// This peer's known peers' public keys
+	knownPeers map[string]string
 )
 
 // init reads identity data when this package is first used at runtime
@@ -69,38 +67,21 @@ func init() {
 			username = currentUser.Username
 		}
 
+		// Save new identity to disk
 		SetThis(username)
 	} else {
+		// Clean the read bytes and store the identity in memory
 		re := regexp.MustCompile(`\s+`)
 		identity = re.ReplaceAllString(string(idBytes), "")
 	}
 
-	// Initialize and read known hosts
-	knownHosts = make(map[string]string)
-	if knownHostBytes, err := os.ReadFile(filepath.Join(zorraDirPath, knownHostsFile)); err != nil && !errors.Is(err, os.ErrNotExist) {
-		log.Warnf("Unable to read known hosts: %s", err.Error())
+	// Initialize and read known peers
+	knownPeers = make(map[string]string)
+	if knownPeersBytes, err := os.ReadFile(filepath.Join(zorraDirPath, knownPeersFile)); err != nil && !errors.Is(err, os.ErrNotExist) {
+		log.Warnf("Unable to read known peers: %s", err.Error())
 	} else if err == nil {
-		if err = json.Unmarshal(knownHostBytes, &knownHosts); err != nil {
-			log.Warnf("Unable to parse known hosts: %s", err.Error())
+		if err = json.Unmarshal(knownPeersBytes, &knownPeers); err != nil {
+			log.Warnf("Unable to parse known peers: %s", err.Error())
 		}
-	}
-}
-
-// This returns this peer's identity
-func This() string {
-	if testing.Testing() {
-		return test.Identity
-	}
-
-	return identity
-}
-
-// SetThis sets this peer's identity
-func SetThis(id string) {
-	identity = id
-	log.Infof("Set identity to %q", id)
-
-	if err := os.WriteFile(filepath.Join(zorraDirPath, identityFile), []byte(id), 0o644); err != nil {
-		log.Warnf("Unable to save identity to disk: %s", err.Error())
 	}
 }

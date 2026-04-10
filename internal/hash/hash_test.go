@@ -9,7 +9,7 @@ import (
 	"github.com/cbeimers113/zorra/internal/hash"
 )
 
-func Test_address_hashString(t *testing.T) {
+func Test_hash_String(t *testing.T) {
 	tests := map[string]struct {
 		str  string
 		size uint8
@@ -45,4 +45,14 @@ func Test_address_hashString(t *testing.T) {
 			assert.Equal(t, tt.want, hash.String(tt.str, tt.size))
 		})
 	}
+}
+
+func Test_hash_Password(t *testing.T) {
+	password := []byte("p@$$w0rd")
+	left := hash.Password(password)
+	right := hash.Password(password)
+
+	assert.Len(t, left, 32)
+	assert.Len(t, right, 32)
+	assert.Equal(t, left, right)
 }

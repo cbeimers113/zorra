@@ -19,7 +19,7 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func Test_addressing_ChannelOf(t *testing.T) {
+func Test_channel_ChannelOf(t *testing.T) {
 	tests := map[string]struct {
 		prefix      netip.Prefix
 		wantChannel int
@@ -46,7 +46,7 @@ func Test_addressing_ChannelOf(t *testing.T) {
 	}
 }
 
-func Test_addressing_PrefixOf(t *testing.T) {
+func Test_channel_PrefixOf(t *testing.T) {
 	tests := map[string]struct {
 		channel    int
 		wantPrefix netip.Prefix
@@ -73,7 +73,7 @@ func Test_addressing_PrefixOf(t *testing.T) {
 	}
 }
 
-func Test_addressing_AddChannel(t *testing.T) {
+func Test_channel_AddChannel(t *testing.T) {
 	tests := map[string]struct {
 		prefix  netip.Prefix
 		wantAdd bool
