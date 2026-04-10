@@ -3,8 +3,13 @@ package log
 
 import "fmt"
 
-// Verbose is a flag specifying whether messages will be logged at the debug level
-var Verbose bool
+var (
+	// Verbose is a flag specifying whether messages will be logged at the debug level
+	Verbose bool
+
+	// errored tracks whether an error was logged this session
+	errored bool
+)
 
 // Info logs a message at the info level
 func Info(msg string) {
@@ -42,12 +47,18 @@ func Warnf(format string, args ...any) {
 
 // Error logs a message at the error level
 func Error(msg string) {
+	errored = true
 	log(msg, red+"ERROR")
 }
 
 // Errorf logs a message with formatting at the error level
 func Errorf(format string, args ...any) {
 	Error(fmt.Sprintf(format, args...))
+}
+
+// ErrorStatus returns whether an error occurred during this session
+func ErrorStatus() bool {
+	return errored
 }
 
 // log is a helper function to log the message with a given prefix

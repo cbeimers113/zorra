@@ -4,6 +4,7 @@ package address_test
 import (
 	"errors"
 	"net"
+	"syscall"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -17,7 +18,8 @@ func Test_address_Ephemeral(t *testing.T) {
 	tests := map[string]struct {
 		linkList   func() ([]netlink.Link, error)
 		addrList   func(netlink.Link, int) ([]netlink.Addr, error)
-		want       net.IP
+		wantAddr   net.IP
+		wantLink   netlink.Link
 		wantErrMsg string
 	}{
 		"Happy path": {
@@ -27,7 +29,8 @@ func Test_address_Ephemeral(t *testing.T) {
 			addrList: func(netlink.Link, int) ([]netlink.Addr, error) {
 				return []netlink.Addr{test.MockAddr}, nil
 			},
-			want: test.EphemAddr,
+			wantAddr: test.EphemAddr,
+			wantLink: new(test.MockLink),
 		},
 
 		"Sad path - could not find network interfaces": {
@@ -72,16 +75,106 @@ func Test_address_Ephemeral(t *testing.T) {
 			address.LinkList = tt.linkList
 			address.AddrList = tt.addrList
 
-			addr, err := address.Ephemeral()
+			addr, link, err := address.Ephemeral()
 			if tt.wantErrMsg == "" {
 				assert.NoError(t, err)
 
 				// Must get back a valid, globally addressable IPv6 address
-				assert.Equal(t, tt.want, addr)
+				assert.Equal(t, tt.wantAddr, addr)
 				assert.True(t, addr.IsGlobalUnicast())
 				assert.False(t, addr.IsPrivate())
+				assert.Equal(t, tt.wantLink, link)
 			} else {
 				assert.ErrorContains(t, err, tt.wantErrMsg)
+			}
+		})
+	}
+}
+
+func Test_address_Register(t *testing.T) {
+	link := new(test.MockLink)
+
+	tests := map[string]struct {
+		addErr  error
+		wantErr bool
+	}{
+		"Happy path": {
+			addErr:  nil,
+			wantErr: false,
+		},
+
+		"Happy path - already registered": {
+			addErr:  syscall.EEXIST,
+			wantErr: false,
+		},
+
+		"Sad path": {
+			addErr:  errors.New("mock error"),
+			wantErr: true,
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			// Backup and restore mocked AddrAdd
+			addrAdd := address.AddrAdd
+			defer func() {
+				address.AddrAdd = addrAdd
+			}()
+
+			// Mock out AddrAdd
+			address.AddrAdd = func(l netlink.Link, a *netlink.Addr) error {
+				assert.Equal(t, link.Attrs().Name, l.Attrs().Name)
+				assert.Equal(t, test.BaseAddr, a.IP)
+
+				ones, bits := a.Mask.Size()
+				assert.Equal(t, 128, ones)
+				assert.Equal(t, 128, bits)
+				return tt.addErr
+			}
+
+			err := address.Register(test.BaseAddr, link)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func Test_address_Deregister(t *testing.T) {
+	link := new(test.MockLink)
+
+	tests := map[string]struct {
+		delErr  error
+		wantErr bool
+	}{}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			// Backup and restore mocked AddrDel
+			addrDel := address.AddrDel
+			defer func() {
+				address.AddrDel = addrDel
+			}()
+
+			// Mock out AddrDel
+			address.AddrDel = func(l netlink.Link, a *netlink.Addr) error {
+				assert.Equal(t, link.Attrs().Name, l.Attrs().Name)
+				assert.Equal(t, test.BaseAddr, a.IP)
+
+				ones, bits := a.Mask.Size()
+				assert.Equal(t, 128, ones)
+				assert.Equal(t, 128, bits)
+				return tt.delErr
+			}
+
+			err := address.Deregister(test.BaseAddr, link)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
 			}
 		})
 	}

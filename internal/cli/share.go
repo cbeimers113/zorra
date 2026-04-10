@@ -12,7 +12,7 @@ var shareCmd = &cobra.Command{
 	Use:   "share",
 	Short: "Determine your Zorra share code",
 	Run: func(*cobra.Command, []string) {
-		ephem, err := address.Ephemeral()
+		ephem, _, err := address.Ephemeral()
 		if err != nil {
 			log.Errorf("Unable to create ephemeral IPv6 address: %s", err.Error())
 			return
