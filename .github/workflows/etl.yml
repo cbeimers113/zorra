@@ -2,7 +2,7 @@ name: Channel Map ETL
 
 on:
   schedule:
-    - cron: '0 21 * * *'
+    - cron: '0 0 * * 5'
   workflow_dispatch:
 
 jobs:
@@ -24,20 +24,6 @@ jobs:
         id: etl
         run: |
           go run ./cmd/etl/main.go
-
-      - name: Update Tracking Issue 
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          if [ "${{ steps.etl.outcome }}" == "failure" ]; then
-            MESSAGE="💥 failure"
-          elif [ -f ./channel-map.gz ]; then
-            MESSAGE="🟢 update produced"
-            mv channel-map.gz ./internal/channel/data/channel-map.gz
-          else
-            MESSAGE="🔴 no update"
-          fi
-          gh issue comment 1 --body "$(date -u '+%Y-%m-%d') $MESSAGE"
 
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
